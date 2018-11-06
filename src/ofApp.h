@@ -46,7 +46,7 @@ public:
     
     /*-----setup-----*/
     static const int DEFORM_RESOLUSION = 100;
-    static const int FRAMERATE_NUM = 20; //1sec
+    static const int FRAMERATE_NUM = 30; //1sec
     static const int RECORD_NUM = FRAMERATE_NUM * 10; //nSec
     
     static const int MIDDLE_VALUE = 600;
@@ -92,11 +92,11 @@ private:
     //PID
     int delta[TOTAL_ANALOG_NUM][2] = {{0},{0}};
     int absDelta[TOTAL_ANALOG_NUM] = {0};
-    float deltaTime = 1 / FRAMERATE_NUM;//0.05
+    float dt = 1 / FRAMERATE_NUM;//0.05
     float integral;
-    float KP = 3.0; //Pゲイン
+    float KP = 7.0; //Pゲイン
     float KI = 0.0; //Iゲイン
-    float KD = 0.0; //Dゲイン
+    float KD = 0.1; //Dゲイン
     float p = 0.0;
     float i = 0.0;
     float d = 0.0;

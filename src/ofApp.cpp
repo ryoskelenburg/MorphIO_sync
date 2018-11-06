@@ -65,7 +65,7 @@ void ofApp::update(){
     /*---sync---*/
     workRealtime();
     
-    /*---check---*/
+    /*---check:動作テスト---*/
     checkOutput(1);
     
     count++;
@@ -140,10 +140,10 @@ void ofApp::workRealtime(){
             fbJudge(i, i-3);
             fbOutput(i-3, i);
         }
-        //output (3-0, 4-1, 5-2)
-        //        for (int i = 0; i < ANALOG_NUM; i++) {
-        //            ffOutput(i, i+3);
-        //        }
+        //std::cout << "PWM[0]: " + ofToString(PWM[0]) << endl;
+        //only one unit
+//        fbJudge(4, 1);
+//        fbOutput(1, 4);
         
     } else {
         for (int i = 0; i < ANALOG_NUM; i++) {
@@ -198,14 +198,17 @@ void ofApp::fbJudge(int teach, int child){ //目標値，センサー値
     delta[teach][0] = delta[teach][1]; //0が過去
     delta[teach][1] = propVol[teach] - propVol[child]; //偏差の取得
     absDelta[teach] = abs(delta[teach][1]); //偏差の絶対値
-    integral += (delta[teach][1] + delta[teach][0]) / 2.0 * deltaTime;
+    integral += (delta[teach][1] + delta[teach][0]) / 2.0 * dt;
+    
+    int deltadelta = delta[teach][1] - delta[teach][0];
     
     p = KP * delta[teach][1]; //定数*偏差(0~100) 255 =  gain * 100
     i = KI * integral;
-    d = KD *(delta[teach][1] - delta[teach][0]) / deltaTime;
+    d = KD * ((delta[teach][1] - delta[teach][0]) / dt);
     
     setPWM_PID(p, 0, 0, child);
     std::cout << "PWM[" + ofToString(child) + "]: " + ofToString(PWM[child]) << endl;
+//    std::cout << "D[" + ofToString(child) + "]: " + ofToString(deltadelta) << endl;
     
     if(absDelta[teach] >= 1) {
         bDeform[teach] = true;
@@ -261,7 +264,7 @@ void ofApp::checkOutput(int x) {
 void ofApp::sendDigitalArduinoSupply(int number, int PWM){
     ard.sendDigital(supplyValve[number], ARD_HIGH);
     ard.sendDigital(vacuumValve[number], ARD_LOW);
-    ard.sendPwm(supplyPump[number], pwm);
+    ard.sendPwm(supplyPump[number], PWM);
     ard.sendPwm(vacuumPump[number], 0);
 }
 
@@ -269,7 +272,7 @@ void ofApp::sendDigitalArduinoVacuum(int number, int PWM){
     ard.sendDigital(supplyValve[number], ARD_LOW);
     ard.sendDigital(vacuumValve[number], ARD_HIGH);
     ard.sendPwm(supplyPump[number], 0);
-    ard.sendPwm(vacuumPump[number], pwm);
+    ard.sendPwm(vacuumPump[number], PWM);
 }
 
 void ofApp::sendDigitalArduinoClose(int number){
@@ -374,7 +377,8 @@ void ofApp::drawLogContents(int _number, int _row, int _order){
     
     smallFont.drawString("minValue  :  " + ofToString(minValue[_number]), row[_row][_order], 730);
     smallFont.drawString("maxValue     :  " + ofToString(maxValue[_number]), row[_row][_order], 745);
-    smallFont.drawString("delta : " + ofToString(recordPropVol[_number][count] - recordPropVol[_number][count-1]), row[_row][_order], 760);
+//    smallFont.drawString("delta : " + ofToString(recordPropVol[_number][count] - recordPropVol[_number][count-1]), row[_row][_order], 760);
+    smallFont.drawString("delta : " + ofToString(propVol[_number] - oldPropVol[_number]), row[_row][_order], 760);
 }
 
 void ofApp::drawArrayData(int _number) {
